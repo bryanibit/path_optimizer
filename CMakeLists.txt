@@ -4,7 +4,7 @@ project(path_optimizer)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_definitions(-std=c++11 -w)
 set(CMAKE_CXX_FLAGS " -Wall -Wextra ${CMAKE_CXX_FLAGS}")
-set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 
 set(catkin_deps
         roscpp
@@ -21,7 +21,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 message(STATUS "CMAKE SOURCE DIR:" ${CMAKE_MODULE_PATH})
 
-find_package(IPOPT REQUIRED)
+# find_package(IPOPT REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(Ipopt REQUIRED ipopt)
+include_directories(${Ipopt_INCLUDE_DIRS})
 find_package(benchmark REQUIRED)
 find_package(OsqpEigen REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -61,7 +64,7 @@ add_library(${PROJECT_NAME}
         src/config/planning_flags.cpp
         include/path_optimizer/config/planning_flags.hpp
         src/reference_path_smoother/angle_diff_smoother.cpp src/reference_path_smoother/tension_smoother.cpp src/reference_path_smoother/tension_smoother_2.cpp)
-target_link_libraries(${PROJECT_NAME} glog gflags ${IPOPT_LIBRARIES} ${catkin_LIBRARIES} OsqpEigen::OsqpEigen osqp::osqp
+target_link_libraries(${PROJECT_NAME} glog gflags ${Ipopt_LIBRARIES} ${catkin_LIBRARIES} OsqpEigen::OsqpEigen osqp::osqp
         )
 
 add_executable(${PROJECT_NAME}_benchmark

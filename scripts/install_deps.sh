@@ -152,18 +152,18 @@ clone_other_ros_pkgs() {
     if (ls $REPO_DIR/.. | grep tinyspline_ros);then
         echo "tinyspline_ros already exist!"
     else
-        git clone https://github.com/qutas/tinyspline_ros
+        git clone https://github.com/pryre/tinyspline_ros
     fi
 }
 
 main() {
     #sudo apt-get update
-    install_ipopt
-    install_cppad
-    install_benchmark
-    install_glog
-    install_gflags
-    install_grid_map
+    #install_ipopt
+    #install_cppad
+    #install_benchmark
+    #install_glog
+    #install_gflags
+    #install_grid_map
     install_osqp_eigen
     clone_other_ros_pkgs
 }

@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
     cv::distanceTransform(eigen2cv(binary), eigen2cv(grid_map.get("distance")),
                           CV_DIST_L2, CV_DIST_MASK_PRECISE);
     grid_map.get("distance") *= resolution;
-    grid_map.setFrameId("/map");
+    grid_map.setFrameId("map");
 //    cv::imwrite("/home/ljn/桌面/map1.png", eigen2cv(grid_map.get("obstacle")));
 
     // Set publishers.
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 
     // Markers initialization.
     ros_viz_tools::RosVizTools markers(nh, "markers");
-    std::string marker_frame_id = "/map";
+    std::string marker_frame_id = "map";
 
     // Loop.
     ros::Rate rate(30.0);

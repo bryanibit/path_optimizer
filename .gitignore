@@ -78,3 +78,5 @@ heuristic_info.txt
 *.gpx
 *.bag
 packages/
+log
+.vscode

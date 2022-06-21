@@ -68,20 +68,21 @@ bool PathOptimizer::solve(const std::vector<State> &reference_points, std::vecto
 
     auto t3 = std::clock();
     // Optimize.
-    if (optimizePath(final_path)) {
-        auto t4 = std::clock();
-        if (FLAGS_enable_computation_time_output) {
-            time_ms_out(t1, t2, "Reference smoothing");
-            time_ms_out(t2, t3, "Reference segmentation");
-            time_ms_out(t3, t4, "Optimization phase");
-            time_ms_out(t1, t4, "All");
-        }
-        LOG(INFO) << "Path optimization SUCCEEDED! Total time cost: " << time_s(t1, t4) << " s";
-        return true;
-    } else {
-        LOG(ERROR) << "Path optimization FAILED!";
-        return false;
-    }
+    // if (optimizePath(final_path)) {
+    //     auto t4 = std::clock();
+    //     if (FLAGS_enable_computation_time_output) {
+    //         time_ms_out(t1, t2, "Reference smoothing");
+    //         time_ms_out(t2, t3, "Reference segmentation");
+    //         time_ms_out(t3, t4, "Optimization phase");
+    //         time_ms_out(t1, t4, "All");
+    //     }
+    //     LOG(INFO) << "Path optimization SUCCEEDED! Total time cost: " << time_s(t1, t4) << " s";
+    //     return true;
+    // } else {
+    //     LOG(ERROR) << "Path optimization FAILED!";
+    //     return false;
+    // }
+    return true;
 }
 
 bool PathOptimizer::solveWithoutSmoothing(const std::vector<PathOptimizationNS::State> &reference_points,

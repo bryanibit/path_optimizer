@@ -236,25 +236,25 @@ int main(int argc, char **argv) {
 //        markers.append(a_star_marker);
 
         // Visualize abnormal bounds.
-        visualization_msgs::Marker abnormal_bounds_marker =
-            markers.newSphereList(0.1, "abnormal bounds", id++, ros_viz_tools::MAGENTA, marker_frame_id);
-        for (size_t i = 0; i != abnormal_bounds.size(); ++i) {
-            auto &ele = abnormal_bounds[i];
-            geometry_msgs::Point state, left_bound, rignt_bound;
-            state.x = std::get<0>(ele).x;
-            state.y = std::get<0>(ele).y;
-            abnormal_bounds_marker.points.push_back(state);
-            abnormal_bounds_marker.colors.push_back(ros_viz_tools::MAGENTA);
-            left_bound.x = state.x + std::get<1>(ele) * cos(std::get<0>(ele).z + M_PI_2);
-            left_bound.y = state.y + std::get<1>(ele) * sin(std::get<0>(ele).z + M_PI_2);
-            rignt_bound.x = state.x + std::get<2>(ele) * cos(std::get<0>(ele).z + M_PI_2);
-            rignt_bound.y = state.y + std::get<2>(ele) * sin(std::get<0>(ele).z + M_PI_2);
-            abnormal_bounds_marker.points.push_back(left_bound);
-            abnormal_bounds_marker.colors.push_back(ros_viz_tools::PURPLE);
-            abnormal_bounds_marker.points.push_back(rignt_bound);
-            abnormal_bounds_marker.colors.push_back(ros_viz_tools::PURPLE);
-        }
-        markers.append(abnormal_bounds_marker);
+        // visualization_msgs::Marker abnormal_bounds_marker =
+        //     markers.newSphereList(0.1, "abnormal bounds", id++, ros_viz_tools::MAGENTA, marker_frame_id);
+        // for (size_t i = 0; i != abnormal_bounds.size(); ++i) {
+        //     auto &ele = abnormal_bounds[i];
+        //     geometry_msgs::Point state, left_bound, rignt_bound;
+        //     state.x = std::get<0>(ele).x;
+        //     state.y = std::get<0>(ele).y;
+        //     abnormal_bounds_marker.points.push_back(state);
+        //     abnormal_bounds_marker.colors.push_back(ros_viz_tools::MAGENTA);
+        //     left_bound.x = state.x + std::get<1>(ele) * cos(std::get<0>(ele).z + M_PI_2);
+        //     left_bound.y = state.y + std::get<1>(ele) * sin(std::get<0>(ele).z + M_PI_2);
+        //     rignt_bound.x = state.x + std::get<2>(ele) * cos(std::get<0>(ele).z + M_PI_2);
+        //     rignt_bound.y = state.y + std::get<2>(ele) * sin(std::get<0>(ele).z + M_PI_2);
+        //     abnormal_bounds_marker.points.push_back(left_bound);
+        //     abnormal_bounds_marker.colors.push_back(ros_viz_tools::PURPLE);
+        //     abnormal_bounds_marker.points.push_back(rignt_bound);
+        //     abnormal_bounds_marker.colors.push_back(ros_viz_tools::PURPLE);
+        // }
+        // markers.append(abnormal_bounds_marker);
 
         // Visualize result path.
         visualization_msgs::Marker result_marker =
@@ -268,81 +268,93 @@ int main(int argc, char **argv) {
         }
         markers.append(result_marker);
 
-        // Visualize result path.
-        visualization_msgs::Marker result_boxes_marker =
-            markers.newLineStrip(0.15, "optimized path by boxes", id++, ros_viz_tools::BLACK, marker_frame_id);
-        for (size_t i = 0; i != result_path_by_boxes.size(); ++i) {
+        // Visualize reference path
+        visualization_msgs::Marker reference_path_marker = 
+            markers.newLineStrip(0.2, "reference path", id++, ros_viz_tools::BLACK, marker_frame_id);
+        for(size_t i = 0; i < smoothed_reference_path.size(); ++i){
+            auto &srp = smoothed_reference_path[i];
             geometry_msgs::Point p;
-            p.x = result_path_by_boxes[i].x;
-            p.y = result_path_by_boxes[i].y;
+            p.x = srp.x;
+            p.y = srp.y;
             p.z = 1.0;
-            result_boxes_marker.points.push_back(p);
+            reference_path_marker.points.push_back(p);
         }
-        markers.append(result_boxes_marker);
+        markers.append(reference_path_marker);
+        // Visualize result path.
+        // visualization_msgs::Marker result_boxes_marker =
+        //     markers.newLineStrip(0.15, "optimized path by boxes", id++, ros_viz_tools::BLACK, marker_frame_id);
+        // for (size_t i = 0; i != result_path_by_boxes.size(); ++i) {
+        //     geometry_msgs::Point p;
+        //     p.x = result_path_by_boxes[i].x;
+        //     p.y = result_path_by_boxes[i].y;
+        //     p.z = 1.0;
+        //     result_boxes_marker.points.push_back(p);
+        // }
+        // markers.append(result_boxes_marker);
 
         // Visualize smoothed reference path.
-        visualization_msgs::Marker smoothed_reference_marker =
-            markers.newLineStrip(0.07,
-                                 "smoothed reference path",
-                                 id++,
-                                 ros_viz_tools::YELLOW,
-                                 marker_frame_id);
-        for (size_t i = 0; i != smoothed_reference_path.size(); ++i) {
-            geometry_msgs::Point p;
-            p.x = smoothed_reference_path[i].x;
-            p.y = smoothed_reference_path[i].y;
-            p.z = 1.0;
-            smoothed_reference_marker.points.push_back(p);
-        }
-        markers.append(smoothed_reference_marker);
-        visualization_msgs::Marker vehicle_geometry_marker =
-            markers.newLineList(0.05, "vehicle", id++, ros_viz_tools::GRAY, marker_frame_id);
-        // Visualize vehicle geometry.
-        static const double length{FLAGS_car_length};
-        static const double width{FLAGS_car_width};
-        static const double rtc{FLAGS_rear_axle_to_center};
-        static const double rear_d{length / 2 - rtc};
-        static const double front_d{length - rear_d};
-        for (size_t i = 0; i != result_path.size(); ++i) {
-            double heading = result_path[i].z;
-            PathOptimizationNS::State p1, p2, p3, p4;
-            p1.x = front_d;
-            p1.y = width / 2;
-            p2.x = front_d;
-            p2.y = -width / 2;
-            p3.x = -rear_d;
-            p3.y = -width / 2;
-            p4.x = -rear_d;
-            p4.y = width / 2;
-            auto tmp_relto = result_path[i];
-            tmp_relto.z = heading;
-            p1 = PathOptimizationNS::local2Global(tmp_relto, p1);
-            p2 = PathOptimizationNS::local2Global(tmp_relto, p2);
-            p3 = PathOptimizationNS::local2Global(tmp_relto, p3);
-            p4 = PathOptimizationNS::local2Global(tmp_relto, p4);
-            geometry_msgs::Point pp1, pp2, pp3, pp4;
-            pp1.x = p1.x;
-            pp1.y = p1.y;
-            pp1.z = 0.1;
-            pp2.x = p2.x;
-            pp2.y = p2.y;
-            pp2.z = 0.1;
-            pp3.x = p3.x;
-            pp3.y = p3.y;
-            pp3.z = 0.1;
-            pp4.x = p4.x;
-            pp4.y = p4.y;
-            pp4.z = 0.1;
-            vehicle_geometry_marker.points.push_back(pp1);
-            vehicle_geometry_marker.points.push_back(pp2);
-            vehicle_geometry_marker.points.push_back(pp2);
-            vehicle_geometry_marker.points.push_back(pp3);
-            vehicle_geometry_marker.points.push_back(pp3);
-            vehicle_geometry_marker.points.push_back(pp4);
-            vehicle_geometry_marker.points.push_back(pp4);
-            vehicle_geometry_marker.points.push_back(pp1);
-        }
-        markers.append(vehicle_geometry_marker);
+        // visualization_msgs::Marker smoothed_reference_marker =
+        //     markers.newLineStrip(0.07,
+        //                          "smoothed reference path",
+        //                          id++,
+        //                          ros_viz_tools::YELLOW,
+        //                          marker_frame_id);
+        // for (size_t i = 0; i != smoothed_reference_path.size(); ++i) {
+        //     geometry_msgs::Point p;
+        //     p.x = smoothed_reference_path[i].x;
+        //     p.y = smoothed_reference_path[i].y;
+        //     p.z = 1.0;
+        //     smoothed_reference_marker.points.push_back(p);
+        // }
+        // markers.append(smoothed_reference_marker);
+        // visualization_msgs::Marker vehicle_geometry_marker =
+        //     markers.newLineList(0.05, "vehicle", id++, ros_viz_tools::GRAY, marker_frame_id);
+        // // Visualize vehicle geometry.
+        // static const double length{FLAGS_car_length};
+        // static const double width{FLAGS_car_width};
+        // static const double rtc{FLAGS_rear_axle_to_center};
+        // static const double rear_d{length / 2 - rtc};
+        // static const double front_d{length - rear_d};
+        // for (size_t i = 0; i != result_path.size(); ++i) {
+        //     double heading = result_path[i].z;
+        //     PathOptimizationNS::State p1, p2, p3, p4;
+        //     p1.x = front_d;
+        //     p1.y = width / 2;
+        //     p2.x = front_d;
+        //     p2.y = -width / 2;
+        //     p3.x = -rear_d;
+        //     p3.y = -width / 2;
+        //     p4.x = -rear_d;
+        //     p4.y = width / 2;
+        //     auto tmp_relto = result_path[i];
+        //     tmp_relto.z = heading;
+        //     p1 = PathOptimizationNS::local2Global(tmp_relto, p1);
+        //     p2 = PathOptimizationNS::local2Global(tmp_relto, p2);
+        //     p3 = PathOptimizationNS::local2Global(tmp_relto, p3);
+        //     p4 = PathOptimizationNS::local2Global(tmp_relto, p4);
+        //     geometry_msgs::Point pp1, pp2, pp3, pp4;
+        //     pp1.x = p1.x;
+        //     pp1.y = p1.y;
+        //     pp1.z = 0.1;
+        //     pp2.x = p2.x;
+        //     pp2.y = p2.y;
+        //     pp2.z = 0.1;
+        //     pp3.x = p3.x;
+        //     pp3.y = p3.y;
+        //     pp3.z = 0.1;
+        //     pp4.x = p4.x;
+        //     pp4.y = p4.y;
+        //     pp4.z = 0.1;
+        //     vehicle_geometry_marker.points.push_back(pp1);
+        //     vehicle_geometry_marker.points.push_back(pp2);
+        //     vehicle_geometry_marker.points.push_back(pp2);
+        //     vehicle_geometry_marker.points.push_back(pp3);
+        //     vehicle_geometry_marker.points.push_back(pp3);
+        //     vehicle_geometry_marker.points.push_back(pp4);
+        //     vehicle_geometry_marker.points.push_back(pp4);
+        //     vehicle_geometry_marker.points.push_back(pp1);
+        // }
+        // markers.append(vehicle_geometry_marker);
 
         // Publish the grid_map.
         grid_map.setTimestamp(time.toNSec());

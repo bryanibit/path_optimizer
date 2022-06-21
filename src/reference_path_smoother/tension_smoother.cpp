@@ -55,6 +55,7 @@ bool TensionSmoother::smooth(PathOptimizationNS::ReferencePath *reference_path) 
     std::vector<double> result_x_list, result_y_list, result_s_list;
     bool solver_ok{false};
     if (FLAGS_tension_solver == "IPOPT") {
+        std::cout << "use IPOPT optimize\n";
         solver_ok = ipoptSmooth(x_list,
                                 y_list,
                                 angle_list,
@@ -64,6 +65,7 @@ bool TensionSmoother::smooth(PathOptimizationNS::ReferencePath *reference_path) 
                                 &result_y_list,
                                 &result_s_list);
     } else if (FLAGS_tension_solver == "OSQP") {
+        std::cout << "use OSQP optimize\n";
         solver_ok = osqpSmooth(x_list,
                                y_list,
                                angle_list,

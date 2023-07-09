@@ -31,6 +31,9 @@ std::unique_ptr<ReferencePathSmoother> ReferencePathSmoother::create(const std::
     }
 }
 
+// 这个类里，input_points_是选择的红点
+// x_list_也是这个类的成员，是bspline得到的点，后来经过osqp smooth
+// reference_path：path_optimiazer的成员变量reference_path_，就是黑色曲线。
 bool ReferencePathSmoother::solve(PathOptimizationNS::ReferencePath *reference_path) {
     // TODO: deal with short reference path.
     if (input_points_.size() < 4) {
@@ -142,6 +145,7 @@ void ReferencePathSmoother::calculateCostAt(std::vector<std::vector<DpPoint>> &s
     if (point.parent_) point.cost_ = min_cost;
 }
 
+// reference是经过osqp smooth后的x_list_, y_list_
 bool ReferencePathSmoother::graphSearchDp(PathOptimizationNS::ReferencePath *reference) {
     auto t1 = std::clock();
 
@@ -151,6 +155,7 @@ bool ReferencePathSmoother::graphSearchDp(PathOptimizationNS::ReferencePath *ref
     double tmp_s = findClosestPoint(x_s, y_s, start_state_.x, start_state_.y, reference->getLength()).s;
     layers_s_list_.clear();
     layers_bounds_.clear();
+    // FLAGS_search_longitudial_spacing == 1.5
     double search_ds = reference->getLength() > 6 ? FLAGS_search_longitudial_spacing : 0.5;
     while (tmp_s < reference->getLength()) {
         layers_s_list_.emplace_back(tmp_s);
@@ -237,6 +242,7 @@ bool ReferencePathSmoother::graphSearchDp(PathOptimizationNS::ReferencePath *ref
             if (point.parent_) is_layer_feasible = true;
         }
         if (layer.front().layer_index_ != 0 && !is_layer_feasible) break;
+        // max_layer_reached: 一般是最后一个layer index，因为两个for循环是从头到尾开始的
         max_layer_reached = layer.front().layer_index_;
     }
 
@@ -251,6 +257,7 @@ bool ReferencePathSmoother::graphSearchDp(PathOptimizationNS::ReferencePath *ref
     }
 
     while (ptr) {
+        // 最后进入这个if
         if (ptr->layer_index_ == 0) {
             layers_bounds_.emplace_back(-10, 10);
         } else {
@@ -288,7 +295,7 @@ bool ReferencePathSmoother::graphSearchDp(PathOptimizationNS::ReferencePath *ref
         }
         ptr = ptr->parent_;
     }
-
+    // lyaers_bounds from less to more
     std::reverse(layers_bounds_.begin(), layers_bounds_.end());
     layers_s_list_.resize(layers_bounds_.size());
 

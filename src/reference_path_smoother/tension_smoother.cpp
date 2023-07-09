@@ -49,8 +49,10 @@ TensionSmoother::TensionSmoother(const std::vector<PathOptimizationNS::State> &i
                                  const PathOptimizationNS::Map &grid_map) :
     ReferencePathSmoother(input_points, start_state, grid_map) {}
 
+// reference_path: path_optimizer的成员变量reference_path_，此时reference_path is empty
 bool TensionSmoother::smooth(PathOptimizationNS::ReferencePath *reference_path) {
     std::vector<double> x_list, y_list, s_list, angle_list, k_list;
+    // use result(x_list_) of bspline to get detail points called x_list and so on
     if (!segmentRawReference(&x_list, &y_list, &s_list, &angle_list, &k_list)) return false;
     std::vector<double> result_x_list, result_y_list, result_s_list;
     bool solver_ok{false};
@@ -103,6 +105,7 @@ bool TensionSmoother::ipoptSmooth(const std::vector<double> &x_list,
                                   std::vector<double> *result_x_list,
                                   std::vector<double> *result_y_list,
                                   std::vector<double> *result_s_list) {
+    std::cout << "use TensionSmoother ipoptSmooth func\n";
     CHECK_EQ(x_list.size(), y_list.size());
     CHECK_EQ(y_list.size(), angle_list.size());
     CHECK_EQ(angle_list.size(), s_list.size());
@@ -193,6 +196,7 @@ bool TensionSmoother::osqpSmooth(const std::vector<double> &x_list,
                                  std::vector<double> *result_x_list,
                                  std::vector<double> *result_y_list,
                                  std::vector<double> *result_s_list) {
+    std::cout << "use TensionSmoother osqpSmooth func\n";
     CHECK_EQ(x_list.size(), y_list.size());
     CHECK_EQ(y_list.size(), angle_list.size());
     CHECK_EQ(angle_list.size(), s_list.size());

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(path_optimizer)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_definitions(-std=c++11 -w)
+add_definitions(-std=c++14 -w)
 set(CMAKE_CXX_FLAGS " -Wall -Wextra ${CMAKE_CXX_FLAGS}")
 set(CMAKE_BUILD_TYPE "Debug")
 

@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 
     // Initialize grid map from image.
     std::string image_dir = ros::package::getPath("path_optimizer");
-    std::string image_file = "gridmap.png";
+    std::string image_file = "customized_grid_map.png";
     image_dir.append("/" + image_file);
     cv::Mat img_src = cv::imread(image_dir, CV_8UC1);
     double resolution = 0.2;  // in meter
@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
         start_pose.orientation.z = start_quat.z();
         start_pose.orientation.w = start_quat.w();
         visualization_msgs::Marker start_marker =
-            markers.newArrow(scale, start_pose, "start point", id++, ros_viz_tools::CYAN, marker_frame_id);
+            markers.newArrow(scale, start_pose, "start point", id++, ros_viz_tools::RED, marker_frame_id);
         markers.append(start_marker);
         geometry_msgs::Pose end_pose;
         end_pose.position.x = end_state.x;
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
         end_pose.orientation.z = end_quat.z();
         end_pose.orientation.w = end_quat.w();
         visualization_msgs::Marker end_marker =
-            markers.newArrow(scale, end_pose, "end point", id++, ros_viz_tools::CYAN, marker_frame_id);
+            markers.newArrow(scale, end_pose, "end point", id++, ros_viz_tools::RED, marker_frame_id);
         markers.append(end_marker);
 
         // Calculate.
@@ -209,6 +209,7 @@ int main(int argc, char **argv) {
 //            FLAGS_enable_dynamic_segmentation = false;
 //            FLAGS_enable_raw_output = false;
 //            FLAGS_output_spacing = 0.3;
+            // reference_path:选择的红点
             if (path_optimizer.solve(reference_path, &result_path)) {
                 std::cout << "ok!" << std::endl;
                 
@@ -221,6 +222,20 @@ int main(int argc, char **argv) {
                 }
             }
             abnormal_bounds = path_optimizer.display_abnormal_bounds();
+
+            // Visualize primal reference path
+            visualization_msgs::Marker reference_primal_marker = 
+                markers.newLineStrip(0.2, "bspline and smooth via ipopt", id++, ros_viz_tools::BLUE, marker_frame_id);
+                auto x_list_marker = path_optimizer.reference_path_smoother->x_list_;
+                auto y_list_marker = path_optimizer.reference_path_smoother->y_list_;
+            for(size_t i = 0; i <x_list_marker.size(); ++i){
+                geometry_msgs::Point p;
+                p.x = x_list_marker[i];
+                p.y = y_list_marker[i];
+                p.z = 1.0;
+                reference_primal_marker.points.push_back(p);
+            }
+            markers.append(reference_primal_marker);
         }
 
         // Visualize a-star.
@@ -258,7 +273,7 @@ int main(int argc, char **argv) {
 
         // Visualize result path.
         visualization_msgs::Marker result_marker =
-            markers.newLineStrip(0.15, "optimized path", id++, ros_viz_tools::GREEN, marker_frame_id);
+            markers.newLineStrip(0.15, "final path", id++, ros_viz_tools::GREEN, marker_frame_id);
         for (size_t i = 0; i != result_path.size(); ++i) {
             geometry_msgs::Point p;
             p.x = result_path[i].x;
@@ -270,7 +285,7 @@ int main(int argc, char **argv) {
 
         // Visualize reference path
         visualization_msgs::Marker reference_path_marker = 
-            markers.newLineStrip(0.2, "reference path", id++, ros_viz_tools::BLACK, marker_frame_id);
+            markers.newLineStrip(0.2, "smooth reference path", id++, ros_viz_tools::BLACK, marker_frame_id);
         for(size_t i = 0; i < smoothed_reference_path.size(); ++i){
             auto &srp = smoothed_reference_path[i];
             geometry_msgs::Point p;
@@ -280,6 +295,7 @@ int main(int argc, char **argv) {
             reference_path_marker.points.push_back(p);
         }
         markers.append(reference_path_marker);
+
         // Visualize result path.
         // visualization_msgs::Marker result_boxes_marker =
         //     markers.newLineStrip(0.15, "optimized path by boxes", id++, ros_viz_tools::BLACK, marker_frame_id);

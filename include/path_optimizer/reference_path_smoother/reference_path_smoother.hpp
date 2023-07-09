@@ -40,6 +40,8 @@ class ReferencePathSmoother {
 
     bool solve(PathOptimizationNS::ReferencePath *reference_path);
     std::vector<std::vector<double>> display() const;
+    // Data to be passed into solvers.
+    std::vector<double> x_list_, y_list_, s_list_;
 
  protected:
     bool segmentRawReference(std::vector<double> *x_list,
@@ -49,8 +51,6 @@ class ReferencePathSmoother {
                              std::vector<double> *k_list) const;
     const State &start_state_;
     const Map &grid_map_;
-    // Data to be passed into solvers.
-    std::vector<double> x_list_, y_list_, s_list_;
 
  private:
     virtual bool smooth(PathOptimizationNS::ReferencePath *reference_path) = 0;

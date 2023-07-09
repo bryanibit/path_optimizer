@@ -37,6 +37,7 @@ PathOptimizer::~PathOptimizer() {
     delete vehicle_state_;
 }
 
+// reference_points: 使用鼠标点击选择的红点
 bool PathOptimizer::solve(const std::vector<State> &reference_points, std::vector<State> *final_path) {
     if (FLAGS_enable_computation_time_output) std::cout << "------" << std::endl;
     CHECK_NOTNULL(final_path);
@@ -49,10 +50,10 @@ bool PathOptimizer::solve(const std::vector<State> &reference_points, std::vecto
     reference_path_->clear();
 
     // Smooth reference path.
-    auto reference_path_smoother = ReferencePathSmoother::create(FLAGS_smoothing_method,
+    reference_path_smoother = ReferencePathSmoother::create(FLAGS_smoothing_method,
                                                                  reference_points,
                                                                  vehicle_state_->getStartState(),
-                                                                 *grid_map_);
+                                                                 *grid_map_);                                                       
     bool smoothing_ok = reference_path_smoother->solve(reference_path_);
     if (!smoothing_ok) {
         LOG(ERROR) << "Path optimization FAILED!";
@@ -68,20 +69,20 @@ bool PathOptimizer::solve(const std::vector<State> &reference_points, std::vecto
 
     auto t3 = std::clock();
     // Optimize.
-    // if (optimizePath(final_path)) {
-    //     auto t4 = std::clock();
-    //     if (FLAGS_enable_computation_time_output) {
-    //         time_ms_out(t1, t2, "Reference smoothing");
-    //         time_ms_out(t2, t3, "Reference segmentation");
-    //         time_ms_out(t3, t4, "Optimization phase");
-    //         time_ms_out(t1, t4, "All");
-    //     }
-    //     LOG(INFO) << "Path optimization SUCCEEDED! Total time cost: " << time_s(t1, t4) << " s";
-    //     return true;
-    // } else {
-    //     LOG(ERROR) << "Path optimization FAILED!";
-    //     return false;
-    // }
+    if (optimizePath(final_path)) {
+        auto t4 = std::clock();
+        if (FLAGS_enable_computation_time_output) {
+            time_ms_out(t1, t2, "Reference smoothing");
+            time_ms_out(t2, t3, "Reference segmentation");
+            time_ms_out(t3, t4, "Optimization phase");
+            time_ms_out(t1, t4, "All");
+        }
+        LOG(INFO) << "Path optimization SUCCEEDED! Total time cost: " << time_s(t1, t4) << " s";
+        return true;
+    } else {
+        LOG(ERROR) << "Path optimization FAILED!";
+        return false;
+    }
     return true;
 }
 

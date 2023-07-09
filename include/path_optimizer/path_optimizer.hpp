@@ -12,6 +12,7 @@
 #include <glog/logging.h>
 #include "grid_map_core/grid_map_core.hpp"
 #include "path_optimizer/config/planning_flags.hpp"
+#include "reference_path_smoother/reference_path_smoother.hpp"
 
 namespace PathOptimizationNS {
 
@@ -38,6 +39,7 @@ public:
     // Only for visualization purpose.
     std::vector<std::tuple<State, double, double>> display_abnormal_bounds() const;
     const ReferencePath &getReferencePath() const;
+    std::unique_ptr<ReferencePathSmoother> reference_path_smoother;
 
 private:
     // Core function.

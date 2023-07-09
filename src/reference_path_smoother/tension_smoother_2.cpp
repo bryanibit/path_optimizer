@@ -76,6 +76,7 @@ bool TensionSmoother2::ipoptSmooth(const std::vector<double> &x_list,
                                    std::vector<double> *result_x_list,
                                    std::vector<double> *result_y_list,
                                    std::vector<double> *result_s_list) {
+    std::cout << "use TensionSmoother2 ipoptSmooth func\n";
     CHECK_EQ(x_list.size(), y_list.size());
     CHECK_EQ(y_list.size(), angle_list.size());
     CHECK_EQ(angle_list.size(), s_list.size());
@@ -168,6 +169,7 @@ bool TensionSmoother2::osqpSmooth(const std::vector<double> &x_list,
                                   std::vector<double> *result_x_list,
                                   std::vector<double> *result_y_list,
                                   std::vector<double> *result_s_list) {
+    std::cout << "use TensionSmoother2 osqpSmooth func\n";
     CHECK_EQ(x_list.size(), y_list.size());
     CHECK_EQ(y_list.size(), angle_list.size());
     CHECK_EQ(angle_list.size(), s_list.size());
@@ -214,6 +216,7 @@ bool TensionSmoother2::osqpSmooth(const std::vector<double> &x_list,
     return true;
 }
 
+// xy部分对角矩阵是与原来点(x_list, y_list)的几何相似性
 void TensionSmoother2::setHessianMatrix(size_t size, Eigen::SparseMatrix<double> *matrix_h) const {
     const size_t x_start_index = 0;
     const size_t y_start_index = x_start_index + size;
@@ -255,6 +258,8 @@ void TensionSmoother2::setConstraintMatrix(const std::vector<double> &x_list,
     const size_t cons_x_index = cons_theta_update_start_index + size - 1;
     const size_t cons_y_index = cons_x_index + 1;
 
+    // 参数个数为 4 * size - 1
+    // 约束个数为 3 * (size - 1) + 2
     Eigen::MatrixXd cons = Eigen::MatrixXd::Zero(3 * (size - 1) + 2, 4 * size - 1);
     *lower_bound = Eigen::MatrixXd::Zero(3 * (size - 1) + 2, 1);
     *upper_bound = Eigen::MatrixXd::Zero(3 * (size - 1) + 2, 1);
@@ -264,8 +269,10 @@ void TensionSmoother2::setConstraintMatrix(const std::vector<double> &x_list,
         cons(cons_x_update_start_index + i, x_start_index + i + 1) =
         cons(cons_y_update_start_index + i, y_start_index + i + 1)
             = cons(cons_theta_update_start_index + i, theta_start_index + i + 1) = 1;
+
         cons(cons_x_update_start_index + i, x_start_index + i) = cons(cons_y_update_start_index + i, y_start_index + i)
             = cons(cons_theta_update_start_index + i, theta_start_index + i) = -1;
+            
         cons(cons_x_update_start_index + i, theta_start_index + i) = ds * sin(angle_list[i]);
         cons(cons_y_update_start_index + i, theta_start_index + i) = -ds * cos(angle_list[i]);
         cons(cons_theta_update_start_index + i, k_start_index + i) = -ds;
@@ -286,7 +293,7 @@ void TensionSmoother2::setConstraintMatrix(const std::vector<double> &x_list,
     (*lower_bound)(cons_x_index) = (*upper_bound)(cons_x_index) = x_list[0];
     (*lower_bound)(cons_y_index) = (*upper_bound)(cons_y_index) = y_list[0];
 }
-
+// 与优化前的点（x_list,y_list）的几何相似性，与hessian中x，y部分对角矩阵共同作用，都是几何相似性
 void TensionSmoother2::setGradient(const std::vector<double> &x_list,
                                    const std::vector<double> &y_list,
                                    Eigen::VectorXd *gradient) {

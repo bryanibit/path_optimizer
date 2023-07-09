@@ -1,5 +1,6 @@
 compiled Object files
 *.slo
+*.png
 *.lo
 *.o
 *.obj

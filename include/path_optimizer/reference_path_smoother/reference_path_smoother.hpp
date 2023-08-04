@@ -42,6 +42,8 @@ class ReferencePathSmoother {
     std::vector<std::vector<double>> display() const;
     // Data to be passed into solvers.
     std::vector<double> x_list_, y_list_, s_list_;
+    std::vector<DpPoint> dp_raw_res;
+    std::vector<std::vector<DpPoint>> samples_clone;
 
  protected:
     bool segmentRawReference(std::vector<double> *x_list,
@@ -76,7 +78,6 @@ class ReferencePathSmoother {
     std::vector<double> layers_s_list_;
     std::vector<std::pair<double, double>> layers_bounds_;
     double vehicle_l_wrt_smoothed_ref_;
-
 };
 }
 

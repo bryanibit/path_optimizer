@@ -206,16 +206,19 @@ bool ReferencePathSmoother::graphSearchDp(PathOptimizationNS::ReferencePath *ref
                 dp_point.is_feasible_ = false;
             }
             if (i == 0 && dp_point.lateral_index_ != start_lateral_index) dp_point.is_feasible_ = false;
+            // the dp_point is location of vehicle
             if (i == 0 && dp_point.lateral_index_ == start_lateral_index) {
                 dp_point.is_feasible_ = true;
                 dp_point.dir_ = start_state_.z;
                 dp_point.cost_ = 0.0;
             }
+            // sample里面是由layer点构成，每个layer点由l从负到正的点构成，sample是由远及近保存layer
             samples.back().emplace_back(dp_point);
             cur_l += FLAGS_search_lateral_spacing;
             ++lateral_index;
         }
         // Get rough bounds.
+        // 这里sample.back()，即point_set是第一个layer采样点，离车最近一排（layer）点
         auto &point_set = samples.back();
         for (int j = 0; j < point_set.size(); ++j) {
             if (j == 0 || !point_set[j - 1].is_feasible_ || !point_set[j].is_feasible_) {
@@ -232,6 +235,7 @@ bool ReferencePathSmoother::graphSearchDp(PathOptimizationNS::ReferencePath *ref
             }
         }
     }
+    samples_clone = samples;
 
     // Calculate cost.
     int max_layer_reached = 0;
@@ -255,8 +259,8 @@ bool ReferencePathSmoother::graphSearchDp(PathOptimizationNS::ReferencePath *ref
             min_cost = point.cost_;
         }
     }
-
     while (ptr) {
+        dp_raw_res.push_back(*ptr);
         // 最后进入这个if
         if (ptr->layer_index_ == 0) {
             layers_bounds_.emplace_back(-10, 10);

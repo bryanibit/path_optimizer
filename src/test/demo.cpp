@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 
     // Initialize grid map from image.
     std::string image_dir = ros::package::getPath("path_optimizer");
-    std::string image_file = "customized_grid_map.png";
+    std::string image_file = "gridmap.png";
     image_dir.append("/" + image_file);
     cv::Mat img_src = cv::imread(image_dir, CV_8UC1);
     double resolution = 0.2;  // in meter
@@ -236,6 +236,34 @@ int main(int argc, char **argv) {
                 reference_primal_marker.points.push_back(p);
             }
             markers.append(reference_primal_marker);
+
+            // Visualize DP path
+            visualization_msgs::Marker reference_DP_marker =
+            markers.newSphereList(0.5, "DP point", id++, ros_viz_tools::BLACK, marker_frame_id);
+            for (size_t i = 0; i != path_optimizer.reference_path_smoother->dp_raw_res.size(); ++i) {
+                auto & dp_point = path_optimizer.reference_path_smoother->dp_raw_res[i];
+                geometry_msgs::Point p;
+                p.x = dp_point.x_;
+                p.y = dp_point.y_;
+                p.z = 1.0;
+                reference_DP_marker.points.push_back(p);
+            }
+            markers.append(reference_DP_marker);
+
+            // Visualize DP sample path
+            visualization_msgs::Marker reference_DP_sample_marker =
+            markers.newSphereList(0.5, "DP sample point", id++, ros_viz_tools::newColorRGBA(0,125,125), marker_frame_id);
+            auto & _sampleclone_ = path_optimizer.reference_path_smoother->samples_clone;
+            for (size_t i = 0; i < _sampleclone_.size(); ++i) {
+                for(size_t j = 0; j < _sampleclone_[i].size(); ++j){
+                    geometry_msgs::Point p;
+                    p.x = _sampleclone_[i][j].x_;
+                    p.y = _sampleclone_[i][j].y_;
+                    p.z = 1.0;
+                    reference_DP_sample_marker.points.push_back(p);
+                }
+            }
+            markers.append(reference_DP_sample_marker);
         }
 
         // Visualize a-star.
@@ -285,7 +313,7 @@ int main(int argc, char **argv) {
 
         // Visualize reference path
         visualization_msgs::Marker reference_path_marker = 
-            markers.newLineStrip(0.2, "smooth reference path", id++, ros_viz_tools::BLACK, marker_frame_id);
+            markers.newLineStrip(0.2, "smooth reference path", id++, ros_viz_tools::newColorRGBA(255,255,0), marker_frame_id);
         for(size_t i = 0; i < smoothed_reference_path.size(); ++i){
             auto &srp = smoothed_reference_path[i];
             geometry_msgs::Point p;

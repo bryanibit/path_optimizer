@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ROS: Launch",
+            "type": "ros",
+            "request": "launch",
+            "target": "${workspaceFolder}/src/path_optimizer_2/launch/demo.launch", // <<< Configure path to your launch file
+            "preLaunchTask": "make_debug", // <<< This is the task that will run before debugging starts
+        }
+    ]
+}

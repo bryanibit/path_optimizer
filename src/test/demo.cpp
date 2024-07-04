@@ -90,10 +90,10 @@ int main(int argc, char **argv) {
 
     // Initialize grid map from image.
     std::string image_dir = ros::package::getPath("path_optimizer");
-    std::string image_file = "gridmap.png";
+    std::string image_file = "customized_grid_map.png";
     image_dir.append("/" + image_file);
     cv::Mat img_src = cv::imread(image_dir, CV_8UC1);
-    double resolution = 0.2;  // in meter
+    double resolution = 0.2;  // in meter for each pixel
     grid_map::GridMap grid_map(std::vector<std::string>{"obstacle", "distance"});
     grid_map::GridMapCvConverter::initializeFromImage(
         img_src, resolution, grid_map, grid_map::Position::Zero());
